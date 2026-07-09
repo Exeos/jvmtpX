@@ -1,8 +1,11 @@
 package me.exeos.jvmtpx.extractor.impl;
 
+import me.exeos.jvmtpx.extractor.ExtractorResult;
 import me.exeos.jvmtpx.extractor.IExtractor;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,7 +14,7 @@ public class Extractor122 implements IExtractor {
     private static final int MAGIC = 1246909233;
 
     @Override
-    public Map<String, long[]> extract(byte[] blob) throws IOException {
+    public ExtractorResult extract(byte[] blob) throws IOException {
         ByteArrayInputStream bin = new ByteArrayInputStream(blob);
         DataInputStream din = new DataInputStream(bin);
         if (din.readInt() != MAGIC) {
@@ -33,6 +36,6 @@ public class Extractor122 implements IExtractor {
             offset += metaData[i];
         }
 
-        return entries;
+        return new ExtractorResult(blob, entries);
     }
 }

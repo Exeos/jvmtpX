@@ -1,5 +1,6 @@
 package me.exeos.jvmtpx.extractor.dispatchor;
 
+import me.exeos.jvmtpx.extractor.ExtractorResult;
 import me.exeos.jvmtpx.extractor.impl.Extractor122;
 import me.exeos.jvmtpx.extractor.impl.Extractor130;
 
@@ -14,9 +15,9 @@ public class ExtractorDispatcher {
 
     public static Map<String, byte[]> extract(DispatcherInput input) {
         Map<String, byte[]> output = new HashMap<>();
-        Map<String, long[]> platformOffsets;
+        ExtractorResult extractorResult;
         try {
-            platformOffsets = switch (input.version()) {
+            extractorResult = switch (input.version()) {
                 case V1_2_2 -> new Extractor122().extract(input.inputBytes());
                 case V1_3_0 -> new Extractor130(input.pepper()).extract(input.inputBytes());
             };
@@ -25,17 +26,17 @@ public class ExtractorDispatcher {
             return output;
         }
 
-        if (platformOffsets == null) {
+        if (extractorResult == null) {
             return output;
         }
 
-        for (Map.Entry<String, long[]> entry : platformOffsets.entrySet()) {
+        for (Map.Entry<String, long[]> entry : extractorResult.platformOffsets().entrySet()) {
             String name = entry.getKey();
             long[] entryMetaData = entry.getValue();
             int offset = (int) entryMetaData[0];
             int compressedLen = (int) entryMetaData[1];
 
-            ByteArrayInputStream slice = new ByteArrayInputStream(input.inputBytes(), offset, compressedLen);
+            ByteArrayInputStream slice = new ByteArrayInputStream(extractorResult.blob(), offset, compressedLen);
             try (var inflater = new InflaterInputStream(slice, new Inflater(true))) {
                 output.put(name, inflater.readAllBytes());
             } catch (IOException e) {

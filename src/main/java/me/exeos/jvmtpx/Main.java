@@ -87,6 +87,7 @@ public class Main {
 
         if (version.requiresPepper && pepper == null) {
             System.out.println("Version requires pepper, but it wasn't provided");
+            return Optional.empty();
         }
 
         return Optional.of(new DispatcherInput(version, inputBytes, pepper));

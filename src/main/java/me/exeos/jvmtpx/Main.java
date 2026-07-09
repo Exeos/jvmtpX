@@ -26,10 +26,12 @@ public class Main {
 
                 try {
                     Files.write(outputPath, entry.getValue());
+                    System.out.println("Extracted: " + outputPath);
                 } catch (IOException e) {
                     System.out.println("Failed to write to file: " + outputPath);
                 }
             }
+            System.out.println("Done");
         });
     }
 

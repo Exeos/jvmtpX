@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "me.exeos"
-version = "1.0-SNAPSHOT"
+version = "1.1.0"
 
 repositories {
     mavenCentral()
@@ -11,4 +11,10 @@ repositories {
 
 application {
     mainClass = "me.exeos.jvmtpx.Main"
+}
+
+tasks.jar {
+    manifest {
+        attributes["Main-Class"] = application.mainClass.get()
+    }
 }

@@ -1,3 +1,5 @@
+native.*
+
 .idea/
 wd/
 .gradle

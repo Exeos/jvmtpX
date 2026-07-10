@@ -1,6 +1,6 @@
 package me.exeos.jvmtpx.packer.dispatcher;
 
-import me.exeos.jvmtpx.extractor.Version;
+import me.exeos.jvmtpx.Version;
 
 import java.util.Map;
 

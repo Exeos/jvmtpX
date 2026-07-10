@@ -1,6 +1,7 @@
 # jvmtpX
 
-Extracts platform-specific binaries from JVMTP binary bundle files, and packs platform binaries back into a JVMTP binary bundle file.
+Extracts platform-specific binaries from JVMTP binary bundle files, and packs platform binaries back into a JVMTP binary
+bundle file.
 
 ## Usage
 
@@ -50,16 +51,18 @@ So in practice, **files produced by `extract` are the expected naming format for
 ## Output
 
 ### Extract
+
 Each extracted entry is written into the current working directory using the entry key with `/` replaced by `.`.
 
 ### Pack
-Creates a packet file in the current working directory named like:
 
-`jvmtpx-packet-<version>_<hash>`
+Creates a packed file in the current working directory named like:
+
+`jvmtpx-packed-<version>_<hash>`
 
 Example:
 
-`jvmtpx-packet-1.3.0_123456789`
+`jvmtpx-packed-1.3.0_123456789`
 
 ## Supported Versions
 

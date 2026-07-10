@@ -1,4 +1,4 @@
-package me.exeos.jvmtpx.extractor;
+package me.exeos.jvmtpx;
 
 public enum Version {
     V1_2_2("1.2.2", 122, false),

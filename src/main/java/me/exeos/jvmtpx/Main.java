@@ -1,8 +1,7 @@
 package me.exeos.jvmtpx;
 
-import me.exeos.jvmtpx.extractor.Version;
-import me.exeos.jvmtpx.extractor.dispatcher.ExtractorDispatcherInput;
 import me.exeos.jvmtpx.extractor.dispatcher.ExtractorDispatcher;
+import me.exeos.jvmtpx.extractor.dispatcher.ExtractorDispatcherInput;
 import me.exeos.jvmtpx.packer.dispatcher.PackerDispatcher;
 import me.exeos.jvmtpx.packer.dispatcher.PackerDispatcherInput;
 
@@ -42,12 +41,12 @@ public class Main {
                 PackerDispatcher.dispatch(packerInput).ifPresentOrElse(output -> {
                     Path outputPath = Paths.get(
                             System.getProperty("user.dir"),
-                            "jvmtpx-packet-" + packerInput.version().stringVersion + "_" + Math.abs(Arrays.hashCode(output))
+                            "jvmtpx-packed-" + packerInput.version().stringVersion + "_" + Math.abs(Arrays.hashCode(output))
                     );
 
                     try {
                         Files.write(outputPath, output);
-                        System.out.println("Packet: " + outputPath);
+                        System.out.println("Packed: " + outputPath);
                     } catch (IOException e) {
                         System.out.println("Failed to write to file: " + outputPath);
                     }
@@ -139,7 +138,7 @@ public class Main {
                     }
 
                     try {
-                        platformBinaries.put(input.getName(), Files.readAllBytes(input.toPath()));
+                        platformBinaries.put(input.getName().replace(".", "/"), Files.readAllBytes(input.toPath()));
                     } catch (IOException e) {
                         System.out.println("Failed to read input platform bytes: " + input.getPath());
                         return Optional.empty();

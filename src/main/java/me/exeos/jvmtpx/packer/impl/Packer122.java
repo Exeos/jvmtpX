@@ -5,7 +5,6 @@ import me.exeos.jvmtpx.packer.IPacker;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.zip.Deflater;
@@ -36,7 +35,7 @@ public class Packer122 implements IPacker {
             dous.write(bytes);
         }
 
-        return new byte[0];
+        return bous.toByteArray();
     }
 
     private Map<String, byte[]> deflateInput(Map<String, byte[]> input) throws IOException {

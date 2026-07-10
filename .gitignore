@@ -1,4 +1,5 @@
 native.*
+jvmtpx-packed*
 
 .idea/
 wd/

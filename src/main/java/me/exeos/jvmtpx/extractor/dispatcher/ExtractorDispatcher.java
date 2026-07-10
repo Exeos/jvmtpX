@@ -1,4 +1,4 @@
-package me.exeos.jvmtpx.extractor.dispatchor;
+package me.exeos.jvmtpx.extractor.dispatcher;
 
 import me.exeos.jvmtpx.extractor.ExtractorResult;
 import me.exeos.jvmtpx.extractor.impl.Extractor122;
@@ -13,7 +13,7 @@ import java.util.zip.InflaterInputStream;
 
 public class ExtractorDispatcher {
 
-    public static Map<String, byte[]> extract(DispatcherInput input) {
+    public static Map<String, byte[]> extract(ExtractorDispatcherInput input) {
         Map<String, byte[]> output = new HashMap<>();
         ExtractorResult extractorResult;
         try {

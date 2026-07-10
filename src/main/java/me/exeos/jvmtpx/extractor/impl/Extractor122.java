@@ -28,6 +28,7 @@ public class Extractor122 implements IExtractor {
             din.readInt();
             metaData[i] = din.readInt();
         }
+
         int dataStart = blob.length - bin.available();
         Map<String, long[]> entries = new HashMap<>(count * 2);
         int offset = dataStart;

@@ -1,0 +1,196 @@
+package me.exeos.jvmtpx;
+
+import me.exeos.jvmtpx.extractor.dispatcher.ExtractorDispatcher;
+import me.exeos.jvmtpx.extractor.dispatcher.ExtractorDispatcherInput;
+import me.exeos.jvmtpx.packer.dispatcher.PackerDispatcher;
+import me.exeos.jvmtpx.packer.dispatcher.PackerDispatcherInput;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+public class Main {
+
+    static void main(String[] args) {
+        parseArgs(args).ifPresent(cli -> {
+            cli.dispatcherInput().ifPresent(dispatcherInput -> {
+                Map<String, byte[]> extracted = ExtractorDispatcher.extract(dispatcherInput);
+
+                for (Map.Entry<String, byte[]> entry : extracted.entrySet()) {
+                    Path outputPath = Paths.get(
+                            System.getProperty("user.dir"),
+                            entry.getKey().replace("/", ".")
+                    );
+
+                    try {
+                        Files.write(outputPath, entry.getValue());
+                        System.out.println("Extracted: " + outputPath);
+                    } catch (IOException e) {
+                        System.out.println("Failed to write to file: " + outputPath);
+                    }
+                }
+            });
+
+            cli.packerInput().ifPresent(packerInput -> {
+                PackerDispatcher.dispatch(packerInput).ifPresentOrElse(output -> {
+                    Path outputPath = Paths.get(
+                            System.getProperty("user.dir"),
+                            "jvmtpx-packed-" + packerInput.version().stringVersion + "_" + Math.abs(Arrays.hashCode(output))
+                    );
+
+                    try {
+                        Files.write(outputPath, output);
+                        System.out.println("Packed: " + outputPath);
+                    } catch (IOException e) {
+                        System.out.println("Failed to write to file: " + outputPath);
+                    }
+                }, () -> {
+                    System.out.println("Packer didn't return output");
+                });
+            });
+
+            System.out.println("Done");
+        });
+    }
+
+    private static Optional<CLIInput> parseArgs(String[] args) {
+        if (args.length < 3) {
+            printUsage();
+            return Optional.empty();
+        }
+
+        String argVersion = args[1].trim().toLowerCase().replace("v", "");
+        Version version = null;
+        for (Version potentialVersion : Version.values()) {
+            if (potentialVersion.stringVersion.equals(argVersion)) {
+                version = potentialVersion;
+                break;
+            }
+
+            try {
+                if (potentialVersion.intVersion == Integer.parseInt(argVersion)) {
+                    version = potentialVersion;
+                }
+            } catch (NumberFormatException _) {
+            }
+        }
+
+        if (version == null) {
+            System.out.println("Failed to parse version");
+            printUsage();
+            return Optional.empty();
+        }
+
+        int argAfterPepperIndex = 2;
+        byte[] pepper = null;
+        // more than 3 args means there could be a pepper
+        if (args.length > 3 && version.requiresPepper) {
+            pepper = parsePepper(args[2]);
+        }
+
+        if (version.requiresPepper) {
+            if (pepper == null) {
+                System.out.println("Version requires pepper, but it wasn't provided");
+                printUsage();
+                return Optional.empty();
+            }
+            argAfterPepperIndex = 3;
+        }
+
+        switch (args[0].trim().toLowerCase()) {
+            case "extract", "e" -> {
+                File input = new File(args[argAfterPepperIndex]);
+                if (!input.exists()) {
+                    System.out.println("Provided input does not exist");
+                    printUsage();
+                    return Optional.empty();
+                }
+                if (!input.canRead()) {
+                    System.out.println("Can't read from provided input");
+                    return Optional.empty();
+                }
+
+                byte[] inputBytes;
+                try {
+                    inputBytes = Files.readAllBytes(input.toPath());
+                } catch (IOException e) {
+                    System.out.println("Failed to read input bytes");
+                    return Optional.empty();
+                }
+
+                return Optional.of(new CLIInput(
+                        Optional.of(new ExtractorDispatcherInput(version, inputBytes, pepper)),
+                        Optional.empty()
+                ));
+            }
+            case "pack", "p" -> {
+                Map<String, byte[]> platformBinaries = new HashMap<>();
+
+                for (int i = argAfterPepperIndex; i < args.length; i++) {
+                    File input = new File(args[i]);
+                    if (!input.exists()) {
+                        System.out.println("Provided platform input does not exist");
+                        printUsage();
+                        return Optional.empty();
+                    }
+                    if (!input.canRead()) {
+                        System.out.println("Can't read from provided platform input");
+                        return Optional.empty();
+                    }
+
+                    try {
+                        platformBinaries.put(input.getName().replace(".", "/"), Files.readAllBytes(input.toPath()));
+                    } catch (IOException e) {
+                        System.out.println("Failed to read input platform bytes: " + input.getPath());
+                        return Optional.empty();
+                    }
+                }
+
+                return Optional.of(new CLIInput(
+                        Optional.empty(),
+                        Optional.of(new PackerDispatcherInput(version, platformBinaries, pepper))
+                ));
+            }
+            default -> {
+                return Optional.empty();
+            }
+        }
+    }
+
+    private static byte[] parsePepper(String pepperArg) {
+        if (pepperArg.isBlank()) {
+            return null;
+        }
+
+        String[] parts = pepperArg.split(",");
+        byte[] pepper = new byte[parts.length];
+        for (int i = 0; i < parts.length; i++) {
+            try {
+                pepper[i] = Byte.parseByte(parts[i].trim());
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException(
+                        "Invalid pepper byte at index " + i + ": '" + parts[i] + "'", e);
+            }
+        }
+        return pepper;
+    }
+
+    private static void printUsage() {
+        System.out.println("Usage:");
+        System.out.println("java -jar jvmtpx.jar extract <version> [pepper] <path/to/jvmtp.binary>");
+        System.out.println("or");
+        System.out.println("java -jar jvmtpx.jar pack <version> [pepper] [<path/to/platform.binary>]...");
+        System.out.println("  pepper: optional, required for some versions. Comma-separated byte[], e.g. \"10,-7,1,0\"");
+        System.out.println();
+        System.out.println("Supported Versions:");
+        for (Version version : Version.values()) {
+            System.out.println("Version: " + version.stringVersion + " (" + version.intVersion + ")" + (version.requiresPepper ? ", requires pepper" : ""));
+        }
+    }
+}

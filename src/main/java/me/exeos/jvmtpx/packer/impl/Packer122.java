@@ -38,7 +38,7 @@ public class Packer122 implements IPacker {
         return bous.toByteArray();
     }
 
-    private Map<String, byte[]> deflateInput(Map<String, byte[]> input) throws IOException {
+    public static Map<String, byte[]> deflateInput(Map<String, byte[]> input) throws IOException {
         Map<String, byte[]> deflatedInput = new LinkedHashMap<>();
         for (String key : input.keySet()) {
             ByteArrayOutputStream dBos = new ByteArrayOutputStream();

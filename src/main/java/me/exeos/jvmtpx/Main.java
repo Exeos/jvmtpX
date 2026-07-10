@@ -125,7 +125,23 @@ public class Main {
             }
             case "pack", "p" -> {
                 Map<String, byte[]> platformBinaries = new HashMap<>();
-                for (int i = 2; i < args.length; i++) {
+                int argsPlatformBinsStart = 2;
+
+                byte[] pepper = null;
+                // more than 3 args means there could be a pepper
+                if (args.length > 3) {
+                    pepper = parsePepper(args[3]);
+                }
+
+                if (version.requiresPepper) {
+                    if (pepper == null) {
+                        System.out.println("Version requires pepper, but it wasn't provided");
+                        return Optional.empty();
+                    }
+                    argsPlatformBinsStart = 3;
+                }
+
+                for (int i = argsPlatformBinsStart; i < args.length; i++) {
                     File input = new File(args[i]);
                     if (!input.exists()) {
                         System.out.println("Provided platform input does not exist");
@@ -177,9 +193,9 @@ public class Main {
     private static void printUsage() {
         System.out.println("Usage:");
         System.out.println("java -jar jvmtpx.jar extract <version> <path/to/jvmtp.binary> [pepper]");
-        System.out.println("  pepper: optional, required for some versions. Comma-separated byte[], e.g. \"10,-7,1,0\"");
         System.out.println("or");
-        System.out.println("java -jar jvmtpx.jar pack <version> [<path/to/platform.binary>]...");
+        System.out.println("java -jar jvmtpx.jar pack <version> [pepper] [<path/to/platform.binary>]...");
+        System.out.println("  pepper: optional, required for some versions. Comma-separated byte[], e.g. \"10,-7,1,0\"");
         System.out.println();
         System.out.println("Supported Versions:");
         for (Version version : Version.values()) {

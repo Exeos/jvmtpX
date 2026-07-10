@@ -87,9 +87,25 @@ public class Main {
             return Optional.empty();
         }
 
+        int argAfterPepperIndex = 2;
+        byte[] pepper = null;
+        // more than 3 args means there could be a pepper
+        if (args.length > 3 && version.requiresPepper) {
+            pepper = parsePepper(args[2]);
+        }
+
+        if (version.requiresPepper) {
+            if (pepper == null) {
+                System.out.println("Version requires pepper, but it wasn't provided");
+                printUsage();
+                return Optional.empty();
+            }
+            argAfterPepperIndex = 3;
+        }
+
         switch (args[0].trim().toLowerCase()) {
             case "extract", "e" -> {
-                File input = new File(args[2]);
+                File input = new File(args[argAfterPepperIndex]);
                 if (!input.exists()) {
                     System.out.println("Provided input does not exist");
                     printUsage();
@@ -108,16 +124,6 @@ public class Main {
                     return Optional.empty();
                 }
 
-                byte[] pepper = null;
-                if (args.length == 4) {
-                    pepper = parsePepper(args[3]);
-                }
-
-                if (version.requiresPepper && pepper == null) {
-                    System.out.println("Version requires pepper, but it wasn't provided");
-                    return Optional.empty();
-                }
-
                 return Optional.of(new CLIInput(
                         Optional.of(new ExtractorDispatcherInput(version, inputBytes, pepper)),
                         Optional.empty()
@@ -125,23 +131,8 @@ public class Main {
             }
             case "pack", "p" -> {
                 Map<String, byte[]> platformBinaries = new HashMap<>();
-                int argsPlatformBinsStart = 2;
 
-                byte[] pepper = null;
-                // more than 3 args means there could be a pepper
-                if (args.length > 3) {
-                    pepper = parsePepper(args[3]);
-                }
-
-                if (version.requiresPepper) {
-                    if (pepper == null) {
-                        System.out.println("Version requires pepper, but it wasn't provided");
-                        return Optional.empty();
-                    }
-                    argsPlatformBinsStart = 3;
-                }
-
-                for (int i = argsPlatformBinsStart; i < args.length; i++) {
+                for (int i = argAfterPepperIndex; i < args.length; i++) {
                     File input = new File(args[i]);
                     if (!input.exists()) {
                         System.out.println("Provided platform input does not exist");
@@ -163,7 +154,7 @@ public class Main {
 
                 return Optional.of(new CLIInput(
                         Optional.empty(),
-                        Optional.of(new PackerDispatcherInput(version, platformBinaries))
+                        Optional.of(new PackerDispatcherInput(version, platformBinaries, pepper))
                 ));
             }
             default -> {
@@ -192,7 +183,7 @@ public class Main {
 
     private static void printUsage() {
         System.out.println("Usage:");
-        System.out.println("java -jar jvmtpx.jar extract <version> <path/to/jvmtp.binary> [pepper]");
+        System.out.println("java -jar jvmtpx.jar extract <version> [pepper] <path/to/jvmtp.binary>");
         System.out.println("or");
         System.out.println("java -jar jvmtpx.jar pack <version> [pepper] [<path/to/platform.binary>]...");
         System.out.println("  pepper: optional, required for some versions. Comma-separated byte[], e.g. \"10,-7,1,0\"");

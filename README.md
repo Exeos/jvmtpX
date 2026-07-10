@@ -8,13 +8,13 @@ bundle file.
 ### Extract
 
 ```sh
-java -jar jvmtpx.jar extract/e <version> <path/to/jvmtp.binary> [pepper]
+java -jar jvmtpx.jar extract/e <version> [pepper] <path/to/jvmtp.binary>
 ```
 
 ### Pack
 
 ```sh
-java -jar jvmtpx.jar pack/p <version> [<path/to/platform.binary>]...
+java -jar jvmtpx.jar pack/p <version> [pepper] [<path/to/platform.binary>]...
 ```
 
 ## Arguments
@@ -25,16 +25,17 @@ java -jar jvmtpx.jar pack/p <version> [<path/to/platform.binary>]...
 |--------------------------|-------------------------------------------------------------------------------------------------------|
 | `extract` / `e`          | Run extractor mode.                                                                                   |
 | `<version>`              | JVMTP version (string or int), e.g. `1.3.0` or `130`.                                                 |
-| `<path/to/jvmtp.binary>` | Path to the JVMTP binary bundle file.                                                                 |
 | `[pepper]`               | Optional comma-separated `byte[]`; required for versions that require pepper. Example: `"10,-7,1,0"`. |
+| `<path/to/jvmtp.binary>` | Path to the JVMTP binary bundle file.                                                                 |
 
 ### Pack mode
 
-| Argument                         | Description                                                       |
-|----------------------------------|-------------------------------------------------------------------|
-| `pack` / `p`                     | Run packer mode.                                                  |
-| `<version>`                      | JVMTP version (string or int), e.g. `1.3.0` or `130`.             |
-| `[<path/to/platform.binary>]...` | One or more platform binary files to include in the packed bunde. |
+| Argument                         | Description                                                                                           |
+|----------------------------------|-------------------------------------------------------------------------------------------------------|
+| `pack` / `p`                     | Run packer mode.                                                                                      |
+| `<version>`                      | JVMTP version (string or int), e.g. `1.3.0` or `130`.                                                 |
+| `[pepper]`                       | Optional comma-separated `byte[]`; required for versions that require pepper. Example: `"10,-7,1,0"`. |
+| `[<path/to/platform.binary>]...` | One or more platform binary files to include in the packed bunde.                                     |
 
 ## Platform filename for packing
 
